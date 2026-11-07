@@ -1,0 +1,20 @@
+{
+  "name": "repstr",
+  "version": "1.0.0",
+  "private": true,
+  "description": "REPSTR - real estate deal analyzer, rental bookkeeping and REPS / STR tax savings tracker. Static single-page site, no server.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "python3 build.py",
+    "setup": "playwright install chromium",
+    "check": "node check.js",
+    "test": "npm run build && npm run check",
+    "start": "python3 -m http.server 8080 --directory dist"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
