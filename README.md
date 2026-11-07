@@ -15,6 +15,8 @@ with the app and all of the visitor's data, which can be opened later to get eve
 
 > Estimates only – not tax advice. Confirm with a CPA.
 
+© 2026 Nolan Herman. All rights reserved. See [LICENSE](LICENSE). No permission is granted to copy, modify or distribute this code.
+
 ---
 
 ## Project structure
