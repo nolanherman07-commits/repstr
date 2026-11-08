@@ -118,6 +118,15 @@ None. The site has no backend, no API keys and no secrets, so there is no `.env`
 If you keep a personal version of the app code as `src/core.js`, `build.py` also builds
 `private/REPSTR_personal.html`. Both `src/core.js` and `private/` are in `.gitignore`, so they are never committed or deployed.
 
+## Launch settings (fill these in when ready)
+
+- **Custom domain:** create `src/CNAME` containing just the domain (for example `repstr.com`). The build copies it to the site
+  and the link previews switch to the new address. Then add the domain under **Settings > Pages > Custom domain** on GitHub.
+- **Visitor counts (GoatCounter):** set `GC_URL` near the top of the `LAND` section in `src/core_blank.js`
+  to your GoatCounter count URL (for example `https://repstr.goatcounter.com/count`).
+- **Early-access list (Formspree or similar):** set `FORM_URL` in `src/core_blank.js`. Until then, "Join early access"
+  opens an email to the owner.
+
 ## Notes
 
 - The page checks its own code when it loads and shows a "locked" message if the built file was edited by hand.

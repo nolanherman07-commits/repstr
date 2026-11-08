@@ -55,10 +55,22 @@ def sim(c, state, key, yr):
     c = one("let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}\n", "let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}\nif(!S)S=JSON.parse('" + st + "');\n", c, 'sim')
     return c
 
-def build(core, path, title=None, theme='navy'):
+SITE = 'https://' + open(os.path.join(S, 'CNAME')).read().strip() + '/' if os.path.exists(os.path.join(S, 'CNAME')) else 'https://nolanherman07-commits.github.io/repstr/'
+ICON = '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%2316335f%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%277%27 fill=%27%23f2b134%27/%3E%3C/svg%3E">'
+DESC = 'Free 1-minute check: see what a short-term rental or Real Estate Professional Status saves you in taxes - federal and state - before you buy.'
+META = ('<meta name="description" content="' + DESC + '">'
+        '<meta property="og:type" content="website"><meta property="og:site_name" content="REPSTR">'
+        '<meta property="og:title" content="See your STR / REPS tax savings before you buy">'
+        '<meta property="og:description" content="' + DESC + '">'
+        '<meta property="og:url" content="' + SITE + '"><meta property="og:image" content="' + SITE + 'img/og.png">'
+        '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
+        '<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="' + SITE + 'img/og.png">')
+
+def build(core, path, title=None, theme='navy', meta=''):
     check(core, path)
     t = rd('template.html').replace('@@THEME@@', theme_css(theme))
     if title: t = one('<title>REPSTR</title>', '<title>' + title + '</title>', t, path)
+    t = t.replace('</title>', '</title>' + ICON + meta, 1)
     html = t.replace('@@H@@', str(hs(core))).replace('@@CORE@@', core)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     open(path, 'w', encoding='utf-8', newline='\n').write(html)
@@ -71,7 +83,7 @@ blank = rd('core_blank.js')
 
 os.makedirs(O, exist_ok=True)
 # landing page (main address) + the app at /app/
-build(one("const LAND=0;", "const LAND=1;", blank, 'land'), os.path.join(O, 'index.html'), 'REPSTR - See your STR / REPS tax savings before you buy')
+build(one("const LAND=0;", "const LAND=1;", blank, 'land'), os.path.join(O, 'index.html'), 'REPSTR - See your STR / REPS tax savings before you buy', meta=META)
 build(blank, os.path.join(O, 'app', 'index.html'))
 import shutil
 if os.path.isdir(os.path.join(S, 'img')):
@@ -86,6 +98,9 @@ t = one("localStorage.setItem(K,JSON.stringify(S));SVE=0", "SVE=0", t, 'tfn')
 t = one("if(window.__SEED&&window.__SEED.props)", "if(0)", t, 'tfn')
 build(t, os.path.join(O, 'test-new.html'), 'REPSTR - Test file new')
 open(os.path.join(O, '.nojekyll'), 'w').close()
+# custom domain: put the domain (e.g. repstr.com) in src/CNAME and it is copied for GitHub Pages
+if os.path.exists(os.path.join(S, 'CNAME')):
+    shutil.copy(os.path.join(S, 'CNAME'), os.path.join(O, 'CNAME'))
 
 # optional personal build (never committed, never deployed)
 if os.path.exists(os.path.join(S, 'core.js')):
