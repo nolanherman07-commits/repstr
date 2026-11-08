@@ -28,7 +28,7 @@ const fs = require('fs');
       await page.waitForTimeout(80);
     }
     console.log(f.padEnd(26), locked ? 'LOCKED' : 'ok', '| tabs:', tabs.length, '|', errs.length ? 'ERRORS: ' + errs.join(' | ') : 'no errors');
-    if (locked || errs.length || tabs.length < 6) bad = 1;
+    if (locked || errs.length || tabs.length < 5) bad = 1;
     await page.close();
   }
   await browser.close();

@@ -7,7 +7,13 @@ Real estate deal analyzer, rental bookkeeping, and REPS / STR tax-savings tracke
 - **Taxes** – estimated tax savings from your rentals (REPS, short-term rental, and "doesn't qualify" / passive rules,
   federal + all 50 states + DC, S corp / W-2 / 1099), write-offs, bonus depreciation, CPA actuals.
 - **Home** – needs-attention list, tax savings, key numbers, charts.
-- **Projected Review** – 5- and 10-year projections.
+- **CPA report** – Schedule E style summary per property per year (Print / Save PDF, CSV).
+- **Hours log** – REPS / STR material participation hours with test progress.
+- **What-if planner** – tax savings this year with and without one more purchase.
+- **Tax savings check** – 5 questions on the first screen, one number.
+- **Audit check** – green / yellow / red per property for the REPS / STR tests.
+- **CPA package** – one PDF: cover, tax math, Schedule E, hours log.
+- **How we calculate** – Info page with every rule, source and test.
 
 It is a **static website**: plain HTML/CSS/JavaScript, no server, no database, no accounts, no API keys.
 Each visitor's data is saved in their own browser (localStorage). "Download everything" saves one HTML file
