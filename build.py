@@ -6,7 +6,9 @@ Usage:
     python3 build.py --bump   also bump the sample-simulation storage version (visitors get fresh sample data)
 
 Output (dist/):
-    index.html               the app (blank - every visitor starts with an empty account saved in their own browser)
+    index.html               landing page (savings check, STR quiz, screenshots, pricing, FAQ)
+    app/index.html           the app (blank - every visitor starts with an empty account saved in their own browser)
+    img/                     screenshots used on the landing page (from src/img)
     simulation.html          5-year sample simulation (3 properties)
     simulation-big.html      big investor sample (35 short-term rentals)
     simulation-section8.html Section 8 sample (3 years)
@@ -68,7 +70,13 @@ if '--bump' in sys.argv:
 blank = rd('core_blank.js')
 
 os.makedirs(O, exist_ok=True)
-build(blank, os.path.join(O, 'index.html'))
+# landing page (main address) + the app at /app/
+build(one("const LAND=0;", "const LAND=1;", blank, 'land'), os.path.join(O, 'index.html'), 'REPSTR - See your STR / REPS tax savings before you buy')
+build(blank, os.path.join(O, 'app', 'index.html'))
+import shutil
+if os.path.isdir(os.path.join(S, 'img')):
+    shutil.rmtree(os.path.join(O, 'img'), ignore_errors=True)
+    shutil.copytree(os.path.join(S, 'img'), os.path.join(O, 'img'))
 build(sim(blank, 'state.json', 'dealtracker.sim.v%d' % V, 2030), os.path.join(O, 'simulation.html'), 'REPSTR - 5 Year Simulation')
 build(sim(blank, 'state_big.json', 'dealtracker.simbig.v%d' % V, 2030), os.path.join(O, 'simulation-big.html'), 'REPSTR - Big Investor Simulation')
 build(sim(blank, 'state_s8.json', 'dealtracker.sims8.v%d' % V, 2027), os.path.join(O, 'simulation-section8.html'), 'REPSTR - Section 8 3 Year Simulation')

@@ -7,7 +7,7 @@ const fs = require('fs');
 
 (async () => {
   const dist = path.join(__dirname, 'dist');
-  const files = ['index.html', 'simulation.html', 'simulation-big.html', 'simulation-section8.html', 'test-new.html'];
+  const files = ['app/index.html', 'simulation.html', 'simulation-big.html', 'simulation-section8.html', 'test-new.html'];
   const missing = files.filter(f => !fs.existsSync(path.join(dist, f)));
   if (missing.length) { console.error('Missing build output:', missing.join(', '), '- run npm run build first'); process.exit(1); }
   // CHROMIUM_PATH lets you use a browser you already have instead of the one from 'npm run setup'.
@@ -31,6 +31,12 @@ const fs = require('fs');
     if (locked || errs.length || tabs.length < 5) bad = 1;
     await page.close();
   }
+  // landing page: savings check + quiz render, no errors
+  { const page = await browser.newPage(); const errs = []; page.on('pageerror', e => errs.push(e.message));
+    await page.goto('file://' + path.join(dist, 'index.html')); await page.waitForTimeout(300);
+    const ok = await page.evaluate(() => !!document.querySelector('#chk') && !!document.querySelector('#quiz'));
+    console.log('index.html (landing)'.padEnd(26), ok ? 'ok' : 'MISSING PARTS', '|', errs.length ? 'ERRORS: ' + errs.join(' | ') : 'no errors');
+    if (!ok || errs.length) bad = 1; await page.close(); }
   await browser.close();
   console.log(bad ? 'FAILED' : 'All pages OK');
   process.exit(bad);

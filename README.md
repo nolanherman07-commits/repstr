@@ -14,6 +14,8 @@ Real estate deal analyzer, rental bookkeeping, and REPS / STR tax-savings tracke
 - **Audit check** – green / yellow / red per property for the REPS / STR tests.
 - **CPA package** – one PDF: cover, tax math, Schedule E, hours log.
 - **How we calculate** – Info page with every rule, source and test.
+- **Landing page** – the main address; the app lives at `/app/`. Screenshots are in `src/img/`.
+- **STR loophole quiz**, **cost seg calculator**, **hours pace + calendar reminder**, quick **+ Log hours** button on phones.
 
 It is a **static website**: plain HTML/CSS/JavaScript, no server, no database, no accounts, no API keys.
 Each visitor's data is saved in their own browser (localStorage). "Download everything" saves one HTML file
@@ -53,7 +55,8 @@ Built pages:
 
 | File | What it is |
 |---|---|
-| `index.html` | The app. Every visitor starts with an empty account in their own browser. |
+| `index.html` | Landing page: savings check, STR quiz, screenshots, pricing, FAQ. |
+| `app/index.html` | The app. Every visitor starts with an empty account in their own browser. |
 | `simulation.html` | Sample: 5-year simulation with 3 properties |
 | `simulation-big.html` | Sample: big investor, 35 short-term rentals |
 | `simulation-section8.html` | Sample: Section 8, 3 years |
