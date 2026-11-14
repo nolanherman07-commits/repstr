@@ -3,7 +3,8 @@
 Real estate deal analyzer, rental bookkeeping, and REPS / STR tax-savings tracker.
 
 - **Deal Analyzer** – check a home before you buy it as a long-term rental (monthly rent) or a short-term rental
-  (yearly gross income, cleaning, booking fees, utilities, supplies, furnishing): cash flow, cash on cash, IRR. Includes the what-if planner.
+  (nightly rate × occupancy with peak/off-season, or yearly gross income; average stay → turnovers; guest cleaning fees;
+  cleaning per turnover, booking fees, utilities, supplies, furnishing): cash flow, cash on cash, IRR, break-even occupancy. Includes the what-if planner.
 - **Active Rentals** – add each property with its details (price, loan, rate, tax type, purchase date, acquisition cost),
   then month-by-month bookkeeping, spreadsheet import, profit & loss.
 - **Taxes** – estimated tax savings from your rentals (REPS, short-term rental, and "doesn't qualify" / passive rules,
