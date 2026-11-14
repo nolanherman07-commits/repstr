@@ -10,7 +10,7 @@
     "check": "node check.js",
     "test": "npm run build && npm run check",
     "start": "python3 -m http.server 8080 --directory dist",
-    "test:cloud": "REPSTR_SB_URL=https://sb.test REPSTR_SB_KEY=test-anon-key python3 build.py && node check-cloud.js && python3 build.py"
+    "test:cloud": "SUPABASE_URL=https://sb.test SUPABASE_PUBLISHABLE_KEY=test-anon-key-000000 python3 build.py && node check-cloud.js && python3 build.py"
   },
   "devDependencies": {
     "playwright": "^1.48.0"

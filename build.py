@@ -86,12 +86,47 @@ V = int(rd('sim_ver.txt').strip() or 1)
 if '--bump' in sys.argv:
     V += 1; open(os.path.join(S, 'sim_ver.txt'), 'w').write(str(V) + '\n')
 blank = rd('core_blank.js')
-# Optional: REPSTR_SB_URL / REPSTR_SB_KEY override the Supabase settings in core_blank.js for this build
-# (used by the tests to point at a local server). Normally the two values are simply typed into core_blank.js.
-if os.environ.get('REPSTR_SB_URL'):
+# Supabase settings (cloud accounts). Read from the environment, then from a .env file next to this script:
+#   SUPABASE_URL              project URL
+#   SUPABASE_PUBLISHABLE_KEY  publishable (anon) key - public by design, it ships inside the page
+#   SUPABASE_SECRET_KEY       NEVER used by the site. It is read only so the build can refuse to leak it.
+# .env is git-ignored. On GitHub the two public values come from .github/workflows/deploy.yml.
+# With no URL or no publishable key, accounts are switched off and the site works entirely in the browser.
+def dotenv(path):
+    o = {}
+    if os.path.exists(path):
+        for line in open(path, encoding='utf-8'):
+            line = line.strip()
+            if not line or line.startswith('#') or '=' not in line: continue
+            k, v = line.split('=', 1); k = k.replace('export ', '').strip(); v = v.strip()
+            if len(v) >= 2 and v[0] == v[-1] and v[0] in '"\'': v = v[1:-1]
+            o[k] = v
+    return o
+ENV = dotenv(os.path.join(D, '.env'))
+def cfg(*names):
+    for n in names:
+        v = os.environ.get(n) or ENV.get(n)
+        if v: return v.strip()
+    return ''
+SB_URL = cfg('SUPABASE_URL', 'REPSTR_SB_URL').rstrip('/')
+SB_KEY = cfg('SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_ANON_KEY', 'REPSTR_SB_KEY')
+SB_SECRET = cfg('SUPABASE_SECRET_KEY', 'SUPABASE_SERVICE_ROLE_KEY')
+if SB_URL or SB_KEY:
     import re
-    blank, n = re.subn(r"const SB_URL='[^']*',SB_KEY='[^']*';", lambda m: "const SB_URL=" + json.dumps(os.environ['REPSTR_SB_URL']) + ",SB_KEY=" + json.dumps(os.environ.get('REPSTR_SB_KEY', 'test')) + ";", blank)
+    assert re.match(r'^https://[A-Za-z0-9.-]+(:\d+)?$', SB_URL), 'SUPABASE_URL must look like https://xxxx.supabase.co'
+    assert re.match(r'^[A-Za-z0-9._-]{20,}$', SB_KEY), 'SUPABASE_PUBLISHABLE_KEY is missing or has unexpected characters'
+    assert not SB_KEY.startswith('sb_secret_') and SB_KEY != SB_SECRET, 'SUPABASE_PUBLISHABLE_KEY holds a SECRET key - use the publishable (anon) key'
+    if SB_KEY.count('.') == 2:
+        import base64
+        try: role = json.loads(base64.urlsafe_b64decode(SB_KEY.split('.')[1] + '==')).get('role')
+        except Exception: role = None
+        assert role != 'service_role', 'SUPABASE_PUBLISHABLE_KEY holds the service_role key - use the anon key'
+    blank, n = re.subn(r"const SB_URL='[^']*',SB_KEY='[^']*';", lambda m: "const SB_URL='" + SB_URL + "',SB_KEY='" + SB_KEY + "';", blank)
     assert n == 1, 'SB_URL / SB_KEY line not found in core_blank.js'
+    print('cloud accounts: ON (' + SB_URL + ')')
+else:
+    print('cloud accounts: off (no SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY)')
+if SB_SECRET: assert SB_SECRET not in blank, 'the secret key is in the site code - remove it'
 
 os.makedirs(O, exist_ok=True)
 # landing page (main address) + the app at /app/
@@ -119,4 +154,8 @@ if os.path.exists(os.path.join(S, 'CNAME')):
 # optional personal build (never committed, never deployed)
 if os.path.exists(os.path.join(S, 'core.js')):
     build(rd('core.js'), os.path.join(D, 'private', 'REPSTR_personal.html'))
+if SB_SECRET:
+    for r_, _, fs_ in os.walk(O):
+        for f_ in fs_:
+            if f_.endswith('.html'): assert SB_SECRET not in open(os.path.join(r_, f_), encoding='utf-8').read(), 'secret key found in ' + f_
 print('done - open dist/index.html in a browser, or run: npm start')

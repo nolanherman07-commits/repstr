@@ -131,10 +131,14 @@ Set it up:
 3. **Authentication -> Sign In / Providers -> Email**: either set up your own SMTP (Authentication -> Emails) so
    confirmation and reset emails reach users, or switch **Confirm email** off to launch without email. Supabase's
    built-in mail sender is for testing only and will not deliver to your users.
-4. **Project Settings -> API**: copy the **Project URL** and the **anon / publishable** key into the `SB_URL` / `SB_KEY`
-   line near the top of `src/core_blank.js`. These two values are public by design; row-level security in
-   `schema.sql` is what protects the data. **Never put the `service_role` / secret key in this repo.**
-5. Push. Leave both values empty to switch accounts off again.
+4. Copy `.env.example` to `.env` and fill it in. `build.py` reads `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`
+   from the environment or from `.env` and writes them into the built pages. `.env` is git-ignored.
+5. The live site is built by GitHub Actions, which has no `.env`: the same two **public** values are set in
+   `.github/workflows/deploy.yml`. They are public by design (they ship inside the page); row-level security in
+   `schema.sql` is what protects the data.
+6. `SUPABASE_SECRET_KEY` bypasses row-level security. The website never uses it and the build fails if it finds it
+   in the site code or the built pages. Keep it only in `.env` on your own computer. **Never commit it.**
+7. Push. Remove the two values from `deploy.yml` (and `.env`) to switch accounts off again.
 
 Not included yet: two-factor sign-in, staff seats (a firm has one login), payments, and syncing attached documents
 between a user's own devices (documents still travel to the CPA inside the client file, up to 5 MB online).

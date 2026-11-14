@@ -3,3 +3,6 @@ __pycache__/
 node_modules/
 src/core.js
 private/
+.env
+.env.*
+!.env.example
