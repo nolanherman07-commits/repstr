@@ -2,7 +2,7 @@
 
 Real estate deal analyzer, rental bookkeeping, and REPS / STR tax-savings tracker.
 
-- **Deal Analyzer** – check a home before you buy it as a long-term rental (monthly rent) or a short-term rental
+- **Pre-Purchase Planner** (was Deal Analyzer) – leads with the what-if tax planner, then check a home before you buy it as a long-term rental (monthly rent) or a short-term rental
   (nightly rate × occupancy with peak/off-season, or yearly gross income; average stay → turnovers; guest cleaning fees;
   cleaning per turnover, booking fees, utilities, supplies, furnishing): cash flow, cash on cash, IRR, break-even occupancy. Includes the what-if planner.
 - **Active Rentals** – add each property with its details (price, loan, rate, tax type, purchase date, acquisition cost),
@@ -11,7 +11,17 @@ Real estate deal analyzer, rental bookkeeping, and REPS / STR tax-savings tracke
   federal + all 50 states + DC, S corp / W-2 / 1099), write-offs, bonus depreciation, CPA actuals.
 - **Home** – needs-attention list, tax savings, key numbers, charts.
 - **CPA report** – Schedule E style summary per property per year (Print / Save PDF, CSV).
-- **Hours log** – REPS / STR material participation hours with test progress.
+- **Hours log** – REPS / STR material participation hours with test progress. Every entry is time-stamped when logged,
+  later changes and deletions are recorded, each entry has a Proof note, investor-type work and education are kept but not
+  counted, and other people's hours (cleaner, manager) can be logged per short-term rental.
+- **STR facts** – nights rented, guest stays and personal-use days per short-term rental per year; average stay is worked out
+  for you, or filled in from an Airbnb / Vrbo reservations CSV (**Import bookings**). Personal use is checked against the
+  greater of 14 days or 10% of rented days.
+- **Audit binder** – one PDF: test results with the IRS authority for each, draft grouping election statement, hours by
+  activity, how the log was kept, and the full hours log.
+- **Depreciation and loss schedules** – depreciation schedule per property (Form 4562 layout, optional 5 / 7 / 15-year cost
+  seg classes), passive loss carryforward worksheet (Form 8582 style), excess business loss / NOL carryforward, depreciation
+  recapture if sold, and a fixed-asset CSV for the CPA's tax software.
 - **What-if planner** – tax savings this year with and without one more purchase.
 - **Tax savings check** – 5 questions on the first screen, one number.
 - **Audit check** – green / yellow / red per property for the REPS / STR tests.
