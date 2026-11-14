@@ -24,6 +24,10 @@ jobs:
           python-version: '3.12'
       - name: Build site
         run: python3 build.py
+        env:
+          # Public values (they ship inside the page). The secret key never goes here or anywhere in this repo.
+          SUPABASE_URL: https://aydnvhcxbnwrujisudfc.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_Cdne3lr2U9Y06ABEGDgEaA_fMTgy6dN
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
