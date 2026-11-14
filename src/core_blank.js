@@ -3,8 +3,8 @@ const hs=s=>{let a=0xdeadbeef,b=0x41c6ce57;for(let i=0,c;i<s.length;i++){c=s.cha
 if(hs(document.getElementById('core').textContent)!==window.__H){document.body.innerHTML='<h2 style="font:20px sans-serif;padding:30px">This app was modified and is locked. Please restore the original file.</h2>';return}
 const SRC0=(()=>{try{const d=document.documentElement.cloneNode(true);d.querySelectorAll('script').forEach(x=>{if(x.id!='core'&&!/^window\.__H=/.test(x.textContent))x.remove()});const ap=d.querySelector('#app');if(ap)ap.innerHTML='';return '<!DOCTYPE html>\n'+d.outerHTML}catch(e){return ''}})();
 const CPAM=0;
-/* Cloud accounts (optional): paste your Supabase Project URL and anon / publishable key. Leave both empty to switch accounts off. */
-const SB_URL='https://aydnvhcxbnwrujisudfc.supabase.co',SB_KEY='';const SBON=!!(SB_URL&&SB_KEY);
+/* Cloud accounts (optional): filled in by build.py from SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY (.env, or the deploy workflow). Empty = accounts off. */
+const SB_URL='',SB_KEY='';const SBON=!!(SB_URL&&SB_KEY);
 const CVID=CPAM?'':(()=>{try{const m=location.search.match(/[?&]client=([a-z0-9]{6,24})(&|$)/);return m?m[1]:''}catch(e){return ''}})(),CVBAD=!!CVID&&(()=>{try{return localStorage.getItem('repstr.cpa.c.'+CVID)==null}catch(e){return true}})();
 const K=CPAM?'repstr.cpa.v1':CVID?'repstr.cpa.c.'+CVID:'dealtracker.blank.v1',MON=['January','February','March','April','May','June','July','August','September','October','November','December'],ST=['Offered','Pending','Waiting Tenant','Active Tenant'],SY=['Single-Family','Multi-Family','Townhouse'];
 const N=v=>+v||0,has=v=>v!==''&&v!=null,$=s=>document.querySelector(s);
