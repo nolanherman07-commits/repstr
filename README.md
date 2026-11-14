@@ -28,6 +28,14 @@ Real estate deal analyzer, rental bookkeeping, and REPS / STR tax-savings tracke
 - **CPA package** – one PDF: cover, tax math, Schedule E, hours log.
 - **How we calculate** – Info page with every rule, source and test.
 - **Landing page** – the main address; the app lives at `/app/`. Screenshots are in `src/img/`.
+- **For CPAs** (`/cpa/`) - firm portal: firm branding and a client invite link, a client dashboard with REPS / STR status,
+  pace to 750 / 100 / 500 hours and alerts, review / flag / sign-off with a year lock, reminder emails, status report CSV,
+  portal backup, a "Why REPSTR" page and a "Security & data" page. Open a client to see their full REPSTR and the what-if planner.
+- **Your CPA** (Taxes tab) - connect to a firm through its invite link, **Send my file to my CPA** (optional passcode,
+  AES-256), **Import my CPA's review**. Flags and the sign-off show in the client's hours log and audit binder.
+- **Documents** - attach receipts, screenshots and PDFs to hours entries or the year; stored in the browser (IndexedDB) and
+  sent inside the client file.
+- **Tax workpapers (CSV)** - Schedule E by line number, Form 4562 inputs, Form 8582 worksheet and the participation tests.
 - **STR loophole quiz**, **cost seg calculator**, **hours pace + calendar reminder**, quick **+ Log hours** button on phones.
 
 It is a **static website**: plain HTML/CSS/JavaScript, no server, no database, no accounts, no API keys.
@@ -69,11 +77,26 @@ Built pages:
 | File | What it is |
 |---|---|
 | `index.html` | Landing page: savings check, STR quiz, screenshots, pricing, FAQ. |
+| `cpa/index.html` | Firm portal and the "for CPAs" page. Saved in the CPA's browser. |
 | `app/index.html` | The app. Every visitor starts with an empty account in their own browser. |
 | `simulation.html` | Sample: 5-year simulation with 3 properties |
 | `simulation-big.html` | Sample: big investor, 35 short-term rentals |
 | `simulation-section8.html` | Sample: Section 8, 3 years |
 | `test-new.html` | Demo that never saves anything – every visit is a brand-new user |
+
+## How the CPA workflow works (no server)
+
+1. The CPA opens `/cpa/`, fills in **Firm & invite link** and sends clients the invite link (it carries the firm's name and
+   contact details only).
+2. The client opens the link, confirms the firm, logs hours, and clicks **Send my file to my CPA** on the Taxes tab. That
+   downloads a `REPSTR-client-...json` file the client emails or uploads to the CPA. Nothing is sent to REPSTR.
+3. The CPA clicks **Import client files**. Each client is stored in the CPA's browser (`localStorage` key
+   `repstr.cpa.c.<id>`, documents in IndexedDB). **Open** loads `app/?client=<id>`: the normal app on the firm's working copy,
+   with the hours log read-only and the review tools on.
+4. The CPA downloads a `REPSTR-review-...json` file and sends it back; the client imports it to see flags and the lock.
+
+Limits of this design: one portal = one browser on one computer (roughly 5 MB of client files); no firm logins, two-factor
+sign-in, staff seats or automatic sync - those need a backend with accounts.
 
 ## Requirements
 

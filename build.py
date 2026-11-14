@@ -7,6 +7,7 @@ Usage:
 
 Output (dist/):
     index.html               landing page (savings check, STR quiz, screenshots, pricing, FAQ)
+    cpa/index.html           firm portal + "for CPAs" page (clients, alerts, review and sign-off; saved in the CPA's browser)
     app/index.html           the app (blank - every visitor starts with an empty account saved in their own browser)
     img/                     screenshots used on the landing page (from src/img)
     simulation.html          5-year sample simulation (3 properties)
@@ -47,9 +48,11 @@ def one(old, new, c, n):
     assert c.count(old) == 1, n + ': expected exactly 1 match for ' + old[:60]
     return c.replace(old, new)
 
+KX = "const K=CPAM?'repstr.cpa.v1':CVID?'repstr.cpa.c.'+CVID:'dealtracker.blank.v1',"
+
 def sim(c, state, key, yr):
     """Sample simulation: frozen date + seeded data."""
-    c = one("const K='dealtracker.blank.v1',", "const Date=class extends globalThis.Date{constructor(...a){if(a.length)super(...a);else super(" + str(yr) + ",11,15)}};\nconst K='" + key + "',", c, 'sim')
+    c = one(KX, "const Date=class extends globalThis.Date{constructor(...a){if(a.length)super(...a);else super(" + str(yr) + ",11,15)}};\nconst K='" + key + "',", c, 'sim')
     c = one("const cut0=()=>{const d=new Date();return d.getFullYear()*12+d.getMonth()};", "const cut0=()=>" + str(yr) + "*12+11;", c, 'sim')
     st = json.dumps(json.loads(rd(state)), separators=(',', ':')).replace('\\', '\\\\').replace("'", "\\'")
     c = one("let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}\n", "let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}\nif(!S)S=JSON.parse('" + st + "');\n", c, 'sim')
@@ -65,6 +68,9 @@ META = ('<meta name="description" content="' + DESC + '">'
         '<meta property="og:url" content="' + SITE + '"><meta property="og:image" content="' + SITE + 'img/og.png">'
         '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
         '<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="' + SITE + 'img/og.png">')
+
+DESC_CPA = 'For CPAs with real estate clients: an hours log clients keep as they go, a dashboard of who will meet the REPS and STR tests by December 31, review and sign-off, and an audit binder with citations.'
+META_CPA = META.replace(DESC, DESC_CPA).replace('See your STR / REPS tax savings before you buy', 'REPSTR for CPAs').replace('content="' + SITE + '">', 'content="' + SITE + 'cpa/">')
 
 def build(core, path, title=None, theme='navy', meta=''):
     check(core, path)
@@ -85,6 +91,8 @@ os.makedirs(O, exist_ok=True)
 # landing page (main address) + the app at /app/
 build(one("const LAND=0;", "const LAND=1;", blank, 'land'), os.path.join(O, 'index.html'), 'REPSTR - See your STR / REPS tax savings before you buy', meta=META)
 build(blank, os.path.join(O, 'app', 'index.html'))
+# firm portal for CPAs (client dashboard, review + sign-off) and the "for CPAs" page
+build(one("const CPAM=0;", "const CPAM=1;", blank, 'cpa'), os.path.join(O, 'cpa', 'index.html'), 'REPSTR for CPAs - REPS and STR client records, audit-ready', meta=META_CPA)
 import shutil
 if os.path.isdir(os.path.join(S, 'img')):
     shutil.rmtree(os.path.join(O, 'img'), ignore_errors=True)
@@ -93,7 +101,7 @@ build(sim(blank, 'state.json', 'dealtracker.sim.v%d' % V, 2030), os.path.join(O,
 build(sim(blank, 'state_big.json', 'dealtracker.simbig.v%d' % V, 2030), os.path.join(O, 'simulation-big.html'), 'REPSTR - Big Investor Simulation')
 build(sim(blank, 'state_s8.json', 'dealtracker.sims8.v%d' % V, 2027), os.path.join(O, 'simulation-section8.html'), 'REPSTR - Section 8 3 Year Simulation')
 # "first visit every time": never reads or writes saved data
-t = one("let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}\n", "let S;\n", one("const K='dealtracker.blank.v1',", "const K='dealtracker.testnew.v1',", blank, 'tfn'), 'tfn')
+t = one("let S;try{S=JSON.parse(localStorage.getItem(K))}catch(e){}\n", "let S;\n", one(KX, "const K='dealtracker.testnew.v1',", blank, 'tfn'), 'tfn')
 t = one("localStorage.setItem(K,JSON.stringify(S));SVE=0", "SVE=0", t, 'tfn')
 t = one("if(window.__SEED&&window.__SEED.props)", "if(0)", t, 'tfn')
 build(t, os.path.join(O, 'test-new.html'), 'REPSTR - Test file new')
