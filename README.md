@@ -38,9 +38,13 @@ Real estate deal analyzer, rental bookkeeping, and REPS / STR tax-savings tracke
 - **Tax workpapers (CSV)** - Schedule E by line number, Form 4562 inputs, Form 8582 worksheet and the participation tests.
 - **STR loophole quiz**, **cost seg calculator**, **hours pace + calendar reminder**, quick **+ Log hours** button on phones.
 
-It is a **static website**: plain HTML/CSS/JavaScript, no server, no database, no accounts, no API keys.
-Each visitor's data is saved in their own browser (localStorage). "Download everything" saves one HTML file
-with the app and all of the visitor's data, which can be opened later to get everything back.
+It is a **static website**: plain HTML/CSS/JavaScript. Each visitor's data is saved in their own browser
+(localStorage). "Download everything" saves one HTML file with the app and all of the visitor's data, which can
+be opened later to get everything back.
+
+**Accounts are optional** (see [Cloud accounts](#cloud-accounts-optional) below). With the two Supabase settings
+filled in, visitors can sign in to keep their data on every device and send their file to their CPA online.
+With the settings empty, there is no server, no database and no accounts - the site works entirely in the browser.
 
 > Estimates only – not tax advice. Confirm with a CPA.
 
@@ -63,6 +67,8 @@ repstr-site/
 │   └── sim_ver.txt                storage version for the sample pages
 ├── build.py                       builds src/ -> dist/ (Python 3 standard library only)
 ├── check.js                       smoke test: opens every page in a headless browser, fails on any error
+├── check-cloud.js                 cloud accounts test (in-memory stand-in for Supabase)
+├── supabase/schema.sql            database tables + access rules for cloud accounts (run once in Supabase)
 ├── package.json                   npm scripts (build / test / start) + Playwright for the test
 ├── vercel.json                    Vercel settings (optional)
 ├── netlify.toml                   Netlify settings (optional)
@@ -95,8 +101,47 @@ Built pages:
    with the hours log read-only and the review tools on.
 4. The CPA downloads a `REPSTR-review-...json` file and sends it back; the client imports it to see flags and the lock.
 
-Limits of this design: one portal = one browser on one computer (roughly 5 MB of client files); no firm logins, two-factor
-sign-in, staff seats or automatic sync - those need a backend with accounts.
+Limits of the file workflow: one portal = one browser on one computer; nothing moves unless someone sends a file.
+Cloud accounts (next section) remove both limits.
+
+## Cloud accounts (optional)
+
+A small backend on [Supabase](https://supabase.com) (hosted Postgres + sign-in). The site stays static: the browser
+talks to Supabase directly with plain `fetch` calls - no SDK, no build step, no server of ours.
+
+What it adds:
+
+- **Sign in / Create account** button (top right of the app and the firm portal). Email + password, password reset.
+- **Sync** - a signed-in user's data is saved to their account and follows them to any device. The newest change wins.
+  A browser that already holds different data asks which copy to keep before anything is replaced.
+- **Client -> CPA online** - a signed-in firm's invite link carries the firm's id. A signed-in client clicks
+  **Send to <firm>** on the Taxes tab; the file shows up in the firm's portal and (unless the client switches it off)
+  stays up to date as they log hours. **Disconnect** removes it.
+- **CPA -> client online** - **Send review to client** in the CPA view; flags and the sign-off appear in the client's
+  REPSTR the next time they open it.
+- **Firm portal on any computer** - the portal and the firm's working copy of each client are saved to the firm's account.
+- **Delete my online copy** in the account window removes everything stored online for that login.
+- Everything from the file workflow (download / email / import, passcode files) still works, with or without an account.
+
+Set it up:
+
+1. Create a project at supabase.com. In **SQL Editor**, paste all of [`supabase/schema.sql`](supabase/schema.sql) and run it.
+2. **Authentication -> URL Configuration**: Site URL `https://www.repstr.net/app/`, and add `https://www.repstr.net/**`
+   to Redirect URLs.
+3. **Authentication -> Sign In / Providers -> Email**: either set up your own SMTP (Authentication -> Emails) so
+   confirmation and reset emails reach users, or switch **Confirm email** off to launch without email. Supabase's
+   built-in mail sender is for testing only and will not deliver to your users.
+4. **Project Settings -> API**: copy the **Project URL** and the **anon / publishable** key into the `SB_URL` / `SB_KEY`
+   line near the top of `src/core_blank.js`. These two values are public by design; row-level security in
+   `schema.sql` is what protects the data. **Never put the `service_role` / secret key in this repo.**
+5. Push. Leave both values empty to switch accounts off again.
+
+Not included yet: two-factor sign-in, staff seats (a firm has one login), payments, and syncing attached documents
+between a user's own devices (documents still travel to the CPA inside the client file, up to 5 MB online).
+A firm's portal still keeps client working copies in the browser's localStorage (roughly 5 MB per computer).
+
+Test it without a Supabase project: `npm run test:cloud` runs the whole flow (sign-up, two devices, the copy chooser,
+client -> CPA -> client) against an in-memory stand-in.
 
 ## Requirements
 

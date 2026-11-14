@@ -86,6 +86,12 @@ V = int(rd('sim_ver.txt').strip() or 1)
 if '--bump' in sys.argv:
     V += 1; open(os.path.join(S, 'sim_ver.txt'), 'w').write(str(V) + '\n')
 blank = rd('core_blank.js')
+# Optional: REPSTR_SB_URL / REPSTR_SB_KEY override the Supabase settings in core_blank.js for this build
+# (used by the tests to point at a local server). Normally the two values are simply typed into core_blank.js.
+if os.environ.get('REPSTR_SB_URL'):
+    import re
+    blank, n = re.subn(r"const SB_URL='[^']*',SB_KEY='[^']*';", lambda m: "const SB_URL=" + json.dumps(os.environ['REPSTR_SB_URL']) + ",SB_KEY=" + json.dumps(os.environ.get('REPSTR_SB_KEY', 'test')) + ";", blank)
+    assert n == 1, 'SB_URL / SB_KEY line not found in core_blank.js'
 
 os.makedirs(O, exist_ok=True)
 # landing page (main address) + the app at /app/
