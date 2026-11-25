@@ -1,5 +1,10 @@
 # REPSTR
 
+> **Tracker mode (since Nov 25, 2026).** The site is just the tracker: `www.repstr.net` opens the app at `/app/`.
+> The landing page, savings-check pop-ups, pricing / early access, the "talk to a CPA" cards and the CPA firm portal (`/cpa/`)
+> are switched off with `const TRK=1` in `src/core_blank.js`; sign-in accounts stay on. The full launch version is kept on the
+> **`launch-version`** branch. To bring it back: set `TRK=0` and restore the landing + `cpa/` build lines in `build.py`.
+
 Real estate deal analyzer, rental bookkeeping, and REPS / STR tax-savings tracker.
 
 - **Pre-Purchase Planner** (was Deal Analyzer) – leads with the what-if tax planner, then check a home before you buy it as a long-term rental (monthly rent) or a short-term rental

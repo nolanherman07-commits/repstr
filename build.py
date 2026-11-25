@@ -60,17 +60,17 @@ def sim(c, state, key, yr):
 
 SITE = 'https://' + open(os.path.join(S, 'CNAME')).read().strip() + '/' if os.path.exists(os.path.join(S, 'CNAME')) else 'https://nolanherman07-commits.github.io/repstr/'
 ICON = '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%2316335f%27/%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%277%27 fill=%27%23f2b134%27/%3E%3C/svg%3E">'
-DESC = 'Free 1-minute check: see what a short-term rental or Real Estate Professional Status saves you in taxes - federal and state - before you buy.'
+DESC = 'REPSTR - track your rentals and the tax they save you (REPS and short-term rentals).'
 META = ('<meta name="description" content="' + DESC + '">'
         '<meta property="og:type" content="website"><meta property="og:site_name" content="REPSTR">'
-        '<meta property="og:title" content="See your STR / REPS tax savings before you buy">'
+        '<meta property="og:title" content="REPSTR - rental tracker and tax savings">'
         '<meta property="og:description" content="' + DESC + '">'
         '<meta property="og:url" content="' + SITE + '"><meta property="og:image" content="' + SITE + 'img/og.png">'
         '<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">'
         '<meta name="twitter:card" content="summary_large_image"><meta name="twitter:image" content="' + SITE + 'img/og.png">')
 
 DESC_CPA = 'For CPAs with real estate clients: an hours log clients keep as they go, a dashboard of who will meet the REPS and STR tests by December 31, review and sign-off, and an audit binder with citations.'
-META_CPA = META.replace(DESC, DESC_CPA).replace('See your STR / REPS tax savings before you buy', 'REPSTR for CPAs').replace('content="' + SITE + '">', 'content="' + SITE + 'cpa/">')
+META_CPA = META.replace(DESC, DESC_CPA).replace('REPSTR - rental tracker and tax savings', 'REPSTR for CPAs').replace('content="' + SITE + '">', 'content="' + SITE + 'cpa/">')
 
 def build(core, path, title=None, theme='navy', meta=''):
     check(core, path)
@@ -129,11 +129,16 @@ else:
 if SB_SECRET: assert SB_SECRET not in blank, 'the secret key is in the site code - remove it'
 
 os.makedirs(O, exist_ok=True)
-# landing page (main address) + the app at /app/
-build(one("const LAND=0;", "const LAND=1;", blank, 'land'), os.path.join(O, 'index.html'), 'REPSTR - See your STR / REPS tax savings before you buy', meta=META)
-build(blank, os.path.join(O, 'app', 'index.html'))
-# firm portal for CPAs (client dashboard, review + sign-off) and the "for CPAs" page
-build(one("const CPAM=0;", "const CPAM=1;", blank, 'cpa'), os.path.join(O, 'cpa', 'index.html'), 'REPSTR for CPAs - REPS and STR client records, audit-ready', meta=META_CPA)
+# TRACKER MODE (Nov 2026, TRK=1 in core_blank.js): the site is just the tracker.
+# The main address sends visitors straight to the app at /app/ (the address sign-in accounts are set up for).
+# The landing page and the CPA firm portal are not built. The full launch version is the launch-version branch;
+# to bring it back, set TRK=0 and restore the two build() lines for index.html (LAND=1) and cpa/index.html (CPAM=1).
+build(blank, os.path.join(O, 'app', 'index.html'), meta=META)
+open(os.path.join(O, 'index.html'), 'w', encoding='utf-8', newline='\n').write(
+    '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>REPSTR</title>' + ICON + META +
+    '<meta http-equiv="refresh" content="0;url=app/"><script>location.replace("app/"+location.search+location.hash)</script>'
+    '</head><body><p><a href="app/">Open REPSTR</a></p></body></html>\n')
+print('built dist/index.html (sends visitors to app/)')
 import shutil
 if os.path.isdir(os.path.join(S, 'img')):
     shutil.rmtree(os.path.join(O, 'img'), ignore_errors=True)

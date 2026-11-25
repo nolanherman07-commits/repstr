@@ -92,6 +92,8 @@ const row = (t, f) => T[t].find(f);
   if (!fs.existsSync(path.join(dist, 'app', 'index.html'))) { console.error('Run the build first: npm run test:cloud'); process.exit(1); }
   if (!fs.readFileSync(path.join(dist, 'app', 'index.html'), 'utf8').includes(SB)) { console.error('dist/ was not built for this test. Use: npm run test:cloud'); process.exit(1); }
   const browser = await chromium.launch(process.env.CHROMIUM_PATH ? {executablePath: process.env.CHROMIUM_PATH} : {});
+  // Tracker mode (TRK=1): the CPA card and the firm portal are off, so only the account steps run.
+  const TRKM = /const TRK=1;/.test(fs.readFileSync(path.join(dist, 'app', 'index.html'), 'utf8'));
   const PW = 'test-only-' + crypto.randomBytes(6).toString('hex');
 
   // 1. investor signs up on device A: the browser's copy goes to the account
@@ -117,23 +119,40 @@ const row = (t, f) => T[t].find(f);
   ok(sB.acct && sB.acct.full == 'Ada Investor' && sB.props.length == 3, 'device B received the data', JSON.stringify(sB.acct));
 
   // 3. a change on B reaches A
+  const sig = d => JSON.stringify((d || {}).yt || null); let want = '';
+  if (TRKM) { const b4 = sig(await stored(B.page)); await click(B.page, '[data-a="pg"][data-v="tx"]'); await B.page.waitForTimeout(200);
+    const dp = await B.page.evaluate(() => { const e = [...document.querySelectorAll('input[data-p^="yt."]')].find(x => x.offsetParent); return e ? e.dataset.p : ''; });
+    await B.page.fill('input[data-p="' + dp + '"]', '123456'); await B.page.keyboard.press('Tab'); await B.page.waitForTimeout(4200);
+    want = sig(await stored(B.page)); ok(!!dp && want != b4, 'tracker mode: a typed change on device B is stored', dp); } else {
   await click(B.page, '[data-a="pg"][data-v="tx"]'); await B.page.waitForTimeout(200); await click(B.page, '[data-a="cfO"]'); await B.page.waitForTimeout(200);
-  await B.page.fill('input[data-p="acct.full"]', 'Ada B. Investor'); await B.page.waitForTimeout(4200);
+  await B.page.fill('input[data-p="acct.full"]', 'Ada B. Investor'); await B.page.waitForTimeout(4200); }
   f = row('files', r => r.user_id == ada.id && r.kind == 'app');
-  ok(JSON.parse(f.data).acct.full == 'Ada B. Investor', 'a change on device B is saved to the account');
+  ok(TRKM ? sig(JSON.parse(f.data)) == want : JSON.parse(f.data).acct.full == 'Ada B. Investor', 'a change on device B is saved to the account');
   await wake(A.page, 1200);
-  ok((await stored(A.page)).acct.full == 'Ada B. Investor', 'device A picks the change up');
+  ok(TRKM ? sig(await stored(A.page)) == want : (await stored(A.page)).acct.full == 'Ada B. Investor', 'device A picks the change up');
 
   // 4. a browser that already has its own data is asked which copy to keep
   const C = await device(browser, sample('Someone Else', 500));
   await C.page.goto(SITE + '/app/'); await settle(C.page);
   await signIn(C.page, 'ada@example.com', PW);
   ok(/Which copy/.test(await C.page.evaluate(() => (document.querySelector('#acct') || {}).textContent || '')), 'a browser with its own data is asked which copy to keep');
-  ok(JSON.parse(row('files', r => r.user_id == ada.id && r.kind == 'app').data).acct.full == 'Ada B. Investor', 'nothing is overwritten before the choice');
+  { const cd = JSON.parse(row('files', r => r.user_id == ada.id && r.kind == 'app').data); ok(TRKM ? sig(cd) == want : cd.acct.full == 'Ada B. Investor', 'nothing is overwritten before the choice'); }
   await click(C.page, '[data-a="acUse"][data-v="cloud"]'); await C.page.waitForTimeout(900);
-  ok((await stored(C.page)).acct.full == 'Ada B. Investor' && (await stored(C.page, 'dealtracker.blank.v1.bak')).acct.full == 'Someone Else', 'choosing the account copy replaces the browser copy and keeps a backup');
+  ok((TRKM ? sig(await stored(C.page)) == want : (await stored(C.page)).acct.full == 'Ada B. Investor') && (await stored(C.page, 'dealtracker.blank.v1.bak')).acct.full == 'Someone Else', 'choosing the account copy replaces the browser copy and keeps a backup');
   await C.ctx.close();
 
+  if (TRKM) {
+    await B.page.evaluate(() => { const a = JSON.parse(localStorage.getItem('repstr.auth.v1')); a.exp = Date.now() - 1000; localStorage.setItem('repstr.auth.v1', JSON.stringify(a)); });
+    await B.page.reload(); await settle(B.page, 900);
+    ok(/Saved/.test(await badge(B.page)) && calls.some(c => /refresh_token/.test(c)), 'an expired session is renewed quietly', await badge(B.page));
+    ok(!(await A.page.evaluate(() => !!document.querySelector('[data-a="cfO"], a[href*="cpa/"]'))), 'tracker mode: no CPA card and no link to the firm portal');
+    await click(B.page, '#acb'); await click(B.page, '[data-a="acOut"]'); await B.page.waitForTimeout(400);
+    ok((await badge(B.page)) == 'Sign in' && !(await stored(B.page, 'repstr.auth.v1')) && (await stored(B.page)).props.length == 3, 'sign-out keeps the browser copy and forgets the session');
+    await click(A.page, '#acb'); await click(A.page, '[data-a="acDel"]'); await A.page.waitForTimeout(200); await click(A.page, '[data-a="dlgY"]'); await A.page.waitForTimeout(900);
+    ok(!T.files.some(r => r.user_id == ada.id) && (await badge(A.page)) == 'Sign in' && (await stored(A.page)).props.length == 3, 'delete my online copy removes the account data, keeps the browser copy');
+    for (const [n, d] of [['A', A], ['B', B]]) ok(!d.errs.length, 'no JavaScript errors on ' + n, d.errs.join(' | '));
+    await browser.close(); console.log(bad ? 'FAILED' : 'Cloud accounts OK (tracker mode: CPA steps skipped)'); process.exit(bad);
+  }
   // 5. CPA firm: portal, sign-up, invite link carries the firm's id
   const P = await device(browser);
   await P.page.goto(SITE + '/cpa/'); await P.page.waitForTimeout(400);
